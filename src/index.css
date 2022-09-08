@@ -1,3 +1,72 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body,
+html,
+#root {
+  height: 100%;
+  background: #222;
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  font-weight: 300;
+}
+
+h1,
+h2 {
+  margin-bottom: 0.1em;
+}
+
+h1 {
+  font-size: 2.25rem;
+}
+
+h2 {
+  font-size: 1.25rem;
+}
+
+p,
+li {
+  margin-bottom: 0.75em;
+}
+
+a {
+  text-decoration: underline;
+}
+
+strong {
+  font-weight: 700;
+}
+
+.results {
+  background-image:
+    repeating-linear-gradient(0deg, rgb(100, 100, 100), rgb(100, 100, 100) 4px, transparent 4px, transparent 8px, rgb(100, 100, 100) 8px),
+    repeating-linear-gradient(90deg, rgb(100, 100, 100), rgb(100, 100, 100) 4px, transparent 4px, transparent 8px, rgb(100, 100, 100) 8px),
+    repeating-linear-gradient(180deg, rgb(100, 100, 100), rgb(100, 100, 100) 4px, transparent 4px, transparent 8px, rgb(100, 100, 100) 8px),
+    repeating-linear-gradient(270deg, rgb(100, 100, 100), rgb(100, 100, 100) 4px, transparent 4px, transparent 8px, rgb(100, 100, 100) 8px);
+  background-size: 1px 100%, 100% 1px, 1px 100%, 100% 1px;
+  background-position: 0 0, 0 0, 100% 0, 0 100%;
+  background-repeat: no-repeat;
+}
+
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-right: 1.25em solid;
+}
+
+.results::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  right: 0;
+  margin: 0 auto;
+  top: -50px;
+  height: 50px;
+  background-image:
+    repeating-linear-gradient(0deg, rgb(100, 100, 100), rgb(100, 100, 100) 4px, transparent 4px, transparent 8px, rgb(100, 100, 100) 8px);
+  background-size: 1px 100%, 100% 1px, 1px 100%, 100% 1px;
+  background-position: 0 0, 0 0, 100% 0, 0 100%;
+  background-repeat: no-repeat;
+}
