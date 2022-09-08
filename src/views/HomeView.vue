@@ -71,7 +71,7 @@ export default {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic ' + btoa(process.env.REACT_APP_SPOTIFY_API_KEY)
+        'Authorization': 'Basic ' + btoa(process.env.VUE_APP_SPOTIFY_API_KEY)
       },
       body: 'grant_type=client_credentials'
     });
@@ -121,7 +121,7 @@ export default {
     getSongkickUrl(songkickCityId) {
       const now = new Date()
       const today = now.toISOString().slice(0, 10)
-      const songkickAPIKey = process.env.REACT_APP_SONGKICK_API_KEY
+      const songkickAPIKey = process.env.VUE_APP_SONGKICK_API_KEY
       let songkickUrl = `https://api.songkick.com/api/3.0/metro_areas/${songkickCityId}/calendar.json?min_date=${today}&apikey=${songkickAPIKey}`;
       
       return songkickUrl
