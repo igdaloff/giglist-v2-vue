@@ -17,7 +17,7 @@
     </div>
 
     <div className="results relative p-6 text-xl">
-      <p>
+      <p aria-live="polite">
         <a className="no-underline hover:underline inline-block decoration-1" :href="randomGigUrl"><strong>{{
         randomGigArtist }}</strong> is playing
           <br />
@@ -28,8 +28,8 @@
       </p>
 
       <iframe v-if="spotifyEmbedUrl" className="mt-6 w-full" :src="spotifyEmbedUrl" width="100%" height="80"
-        frameBorder="0" allowtransparency="true" allow="encrypted-media"></iframe>
-      <em v-else className="text-gray-600 text-sm pt-4 block">[Artist not found on Spotify]</em>
+        frameBorder="0" allowtransparency="true" allow="encrypted-media" aria-live="polite"></iframe>
+      <em v-else className="text-gray-600 text-sm pt-4 block" aria-live="polite">[Artist not found on Spotify]</em>
     </div>
 
     <div className="block text-center p-4">
@@ -155,9 +155,10 @@ export default {
           'Authorization': 'Bearer ' + token 
         }  
       });
+      
       const spotifyData = await artistResult.json()
       const spotifyArtistId = spotifyData.artists.items[0].id     
-      this.spotifyEmbedUrl = `https://open.spotify.com/embed/artist/${spotifyArtistId}`
+      this.spotifyEmbedUrl = `https://open.spotify.com/embed/artist/${spotifyArtistId}`      
     }
   }
 }

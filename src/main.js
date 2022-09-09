@@ -8,4 +8,7 @@ import router from './router'
 
 library.add(faRepeat, faAngleDown)
 
-createApp(App).use(router).component('font-awesome-icon', FontAwesomeIcon).mount('#app')
+createApp(App)
+  .use(router)  
+  .component('font-awesome-icon', FontAwesomeIcon)
+  .mount('#app')
