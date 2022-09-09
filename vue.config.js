@@ -1,4 +1,11 @@
-const { defineConfig } = require('@vue/cli-service')
-module.exports = defineConfig({
-  transpileDependencies: true
-})
+module.exports = {
+  pluginOptions: {
+    sitemap: {
+      urls: [
+        'https://concertstonight.co/',
+        'https://concertstonight.com/about',
+      ],
+      pretty: true
+    }
+  }
+}
