@@ -3,7 +3,7 @@ module.exports = {
     sitemap: {
       urls: [
         'https://concertstonight.co/',
-        'https://concertstonight.com/about',
+        'https://concertstonight.co/about',
       ],
       pretty: true
     }
