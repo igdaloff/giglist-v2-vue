@@ -15,7 +15,7 @@
         </div>
       </div>
     </div>
-
+  
     <div className="results relative p-6 text-xl">
       <p aria-live="polite">
         <a className="no-underline hover:underline inline-block decoration-1" :href="randomGigUrl"><strong>{{
@@ -26,12 +26,12 @@
           at {{ randomGigVenue }}&nbsp;→
         </a>
       </p>
-
+  
       <iframe v-if="spotifyEmbedUrl" className="mt-6 w-full" :src="spotifyEmbedUrl" width="100%" height="80"
         frameBorder="0" allowtransparency="true" allow="encrypted-media" aria-live="polite"></iframe>
       <em v-else className="text-gray-600 text-sm pt-4 block" aria-live="polite">[Artist not found on Spotify]</em>
     </div>
-
+  
     <div className="block text-center p-4">
       <button className="hover:underline" @click="getCityData">
         <font-awesome-icon icon="repeat" className="pr-2" /> Get Another
@@ -42,15 +42,16 @@
 
 <script>
 
-import cityData from "../data/songkickCityData.js"
+import cityData from '../data/songkickCityData.js'
 
 export default {
-  name: 'App',
+  name: 'HomeView',
+
   data() {
     return {
       selected: 7644,
       cities: cityData,
-      songkickData: [], 
+      songkickData: [],
       spotifyToken: '',
       spotifyEmbedUrl: '',
       randomGigVenue: '',
@@ -63,8 +64,8 @@ export default {
       gigIsToday: ''
     }
   },
-  async created(){
-    
+  async created() {
+
     // The first step in getting data from Spotify API is to do a POST request with our client ID and secret to get an access token in response (From this tutorial: https://www.youtube.com/watch?v=SbelQW2JaDQ)    
     // The below private method returns a promise (as denoted by 'async'); we store the endpoint response in variable 'result' 
     const result = await fetch('https://accounts.spotify.com/api/token', {
@@ -79,28 +80,28 @@ export default {
     // We await the json result from above and store it in variable 'data' and specifically return the access_token from the json data
     // We'll use this token to call Spotify API endpoint below
     const data = await result.json()
-    this.spotifyToken = data.access_token;   
+    this.spotifyToken = data.access_token;
 
     // Also, show a default result on page load
-    this.getCityData(this.selected)    
-  },  
+    this.getCityData(this.selected)
+  },
   methods: {
-    async getCityData(defaultCityId, e) {
+      async getCityData(defaultCityId, e) {
 
       // Store city ID from selected <option> value in a variable; use defaultCityId on page load only
       const songkickCityId = defaultCityId ? this.selected : e.target.value
-      
+
       // Using the getSongkickUrl method, generate a URL using the ID and date from above
-      const songkickUrl = this.getSongkickUrl(songkickCityId) 
-      let songkickData  
+      const songkickUrl = this.getSongkickUrl(songkickCityId)
+      let songkickData
       const CACHE_MAX_AGE = 24 * 60 * 60 * 1000 // 24 hrs in ms
       const cachedResultJSON = localStorage.getItem(`cache-${songkickCityId}`)
-      const cachedResult = JSON.parse(cachedResultJSON)      
+      const cachedResult = JSON.parse(cachedResultJSON)
 
       if (cachedResult && Date.now() - cachedResult.createdAt < CACHE_MAX_AGE) {
         // If data is cached, set songkickData as data from cache
-        songkickData = cachedResult.songkickData 
-        
+        songkickData = cachedResult.songkickData
+
       } else {
         // If data not cached, fetch it from the URL generated in getSongkickURL(), extract it as a JSON object, and store it in a new cache, alongside a createdAt timestamp 
         // Also, store response in songkickData array defined above in data()
@@ -111,11 +112,11 @@ export default {
         const dataToCache = {
           createdAt: Date.now(),
           songkickData
-        }                        
-        localStorage.setItem(`cache-${songkickCityId}`, JSON.stringify(dataToCache))                                 
-      }                
+        }
+        localStorage.setItem(`cache-${songkickCityId}`, JSON.stringify(dataToCache))
+      }
 
-      this.songkickData = songkickData  
+      this.songkickData = songkickData
       this.getRandomGigData()
     },
     getSongkickUrl(songkickCityId) {
@@ -123,12 +124,12 @@ export default {
       const today = now.toISOString().slice(0, 10)
       const songkickAPIKey = process.env.VUE_APP_SONGKICK_API_KEY
       let songkickUrl = `https://api.songkick.com/api/3.0/metro_areas/${songkickCityId}/calendar.json?min_date=${today}&apikey=${songkickAPIKey}`;
-      
+
       return songkickUrl
     },
-    getRandomGigData() {      
+    getRandomGigData() {
       const listOfGigs = this.songkickData.resultsPage.results.event
-      const randomGig = listOfGigs[Math.floor(Math.random()*listOfGigs.length)];
+      const randomGig = listOfGigs[Math.floor(Math.random() * listOfGigs.length)];
       const now = new Date()
       const today = now.toISOString().slice(0, 10)
       this.gigIsToday = new Date(randomGig.start.date).toISOString().slice(0, 10) == today
@@ -136,30 +137,31 @@ export default {
       const randomGigDate = new Date(randomGig.start.date.replace(/-/g, '\/')); //Replacing dash with slash to fix quirky thing with Date() object being 1 day off: https://stackoverflow.com/questions/7556591/is-the-javascript-date-object-always-one-day-off
 
       this.randomGigVenue = randomGig.venue.displayName;
-      this.randomGigUrl = randomGig.uri;      
+      this.randomGigUrl = randomGig.uri;
       this.randomGigDayOfWeek = randomGigDate.toLocaleString('default', { weekday: 'long' });
       this.randomGigMonth = randomGigDate.toLocaleString('default', { month: 'long' });
       this.randomGigDay = randomGigDate.getDate();
-      this.randomGigArtist = randomGig.performance[0].artist.displayName;  
+      this.randomGigArtist = randomGig.performance[0].artist.displayName;
       this.randomGigTime = randomGig.start.time ? randomGig.start.time.slice(0, -3) : ''
 
       this.getSpotifyEmbedUrl(this.spotifyToken, this.randomGigArtist)
     },
 
-    async getSpotifyEmbedUrl(token, artistName) {
+      async getSpotifyEmbedUrl(token, artistName) {
       const artistResult = await fetch(`https://api.spotify.com/v1/search?q=${artistName}&type=artist&limit=1`, {
         method: 'GET',
-        headers: { 
-				  'Content-Type': 'application/json',
-          'Accept': 'application/json',          
-          'Authorization': 'Bearer ' + token 
-        }  
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ' + token
+        }
       });
-      
+
       const spotifyData = await artistResult.json()
-      const spotifyArtistId = spotifyData.artists.items[0].id     
-      this.spotifyEmbedUrl = `https://open.spotify.com/embed/artist/${spotifyArtistId}`      
+      const spotifyArtistId = spotifyData.artists.items[0].id
+      this.spotifyEmbedUrl = `https://open.spotify.com/embed/artist/${spotifyArtistId}`
     }
   }
 }
+
 </script>
