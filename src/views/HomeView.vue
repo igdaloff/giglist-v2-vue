@@ -17,33 +17,37 @@
       </div>
     </div>
 
-    <div className="results relative p-6 text-xl">
-      <p aria-live="polite">
-        <a
-          className="no-underline hover:underline inline-block decoration-1"
-          :href="randomGigUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          ><strong>{{ randomGigArtist }}</strong> is playing
-          <br />
-          <strong v-if="!gigIsToday">{{ randomGigDayOfWeek }}, {{ randomGigMonth }} {{ randomGigDay }}</strong>
-          <strong v-else>Today, {{ randomGigTime }}</strong>
-          at {{ randomGigVenue }}&nbsp;→
-        </a>
-      </p>
+    <div className="results relative p-6 text-xl min-h-[208px]">
+      <transition name="fade">
+        <div v-if="showResults">
+          <div aria-live="polite">
+            <a
+              className="no-underline hover:underline inline-block decoration-1"
+              :href="randomGigUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              ><strong>{{ randomGigArtist }}</strong> is playing
+              <br />
+              <strong v-if="!gigIsToday">{{ randomGigDayOfWeek }}, {{ randomGigMonth }} {{ randomGigDay }}</strong>
+              <strong v-else>Today, {{ randomGigTime }}</strong>
+              at {{ randomGigVenue }}&nbsp;→
+            </a>
+          </div>
 
-      <iframe
-        v-if="spotifyEmbedUrl"
-        title="`Spotify player with top tracks for ${randomGigArtist}`"
-        className="mt-6 w-full"
-        :src="spotifyEmbedUrl"
-        width="100%"
-        height="80"
-        frameBorder="0"
-        allowtransparency="true"
-        allow="encrypted-media"
-        aria-live="polite"></iframe>
-      <em v-else className="text-gray-600 text-sm pt-4 block" aria-live="polite">[Artist not found on Spotify]</em>
+          <iframe
+            v-if="spotifyEmbedUrl"
+            title="`Spotify player with top tracks for ${randomGigArtist}`"
+            className="mt-6 w-full"
+            :src="spotifyEmbedUrl"
+            width="100%"
+            height="80"
+            frameBorder="0"
+            allowtransparency="true"
+            allow="encrypted-media"
+            aria-live="polite"></iframe>
+          <em v-else className="text-gray-600 text-sm pt-4 block" aria-live="polite">[Artist not found on Spotify]</em>
+        </div>
+      </transition>
     </div>
 
     <div className="block text-center p-4">
@@ -62,19 +66,20 @@ export default {
 
   data() {
     return {
-      selected: 345,
       cities: cityData,
-      ticketmasterData: [],
-      spotifyToken: '',
-      spotifyEmbedUrl: '',
+      gigIsToday: '',
+      randomGigDay: '',
+      randomGigArtist: '',
       randomGigVenue: '',
       randomGigUrl: '',
       randomGigDayOfWeek: '',
       randomGigMonth: '',
-      randomGigDay: '',
-      randomGigArtist: '',
       randomGigTime: '',
-      gigIsToday: ''
+      selected: 345,
+      spotifyToken: '',
+      spotifyEmbedUrl: '',
+      showResults: true,
+      ticketmasterData: []
     };
   },
   async created() {
@@ -99,6 +104,9 @@ export default {
   },
   methods: {
     async getCityData(defaultCityId, e) {
+      this.showResults = false; // Hide the results to start the fade-out
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       // Store city ID from selected <option> value in a variable; use defaultCityId on page load only
       const ticketmasterCityId = defaultCityId ? this.selected : e.target.value;
 
@@ -128,12 +136,14 @@ export default {
 
       this.ticketmasterData = ticketmasterData;
       this.getRandomGigData();
+
+      this.showResults = true;
     },
     getTicketmasterUrl(ticketmasterCityId) {
       const startDate = new Date().toISOString().split('T')[0];
       const endDate = new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().split('T')[0];
       const ticketmasterAPIKey = process.env.VUE_APP_TICKETMASTER_API_KEY;
-      let ticketmasterUrl = `https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&dmaId=${ticketmasterCityId}&apikey=${ticketmasterAPIKey}&startDateTime=${startDate}T00:00:00Z&endDateTime=${endDate}T23:59:59Z`;
+      let ticketmasterUrl = `https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&dmaId=${ticketmasterCityId}&apikey=${ticketmasterAPIKey}&startDateTime=${startDate}T00:00:00Z&endDateTime=${endDate}T23:59:59Z&sort=random`;
       return ticketmasterUrl;
     },
     getRandomGigData() {
@@ -149,9 +159,14 @@ export default {
       this.randomGigDayOfWeek = randomGigDate.toLocaleString('default', { weekday: 'long' });
       this.randomGigMonth = randomGigDate.toLocaleString('default', { month: 'long' });
       this.randomGigDay = randomGigDate.getDate();
-      this.randomGigArtist = randomGig._embedded.attractions[0].name;
+      this.randomGigArtist = randomGig._embedded.attractions
+        ? randomGig._embedded.attractions[0].name
+        : 'Unknown artist';
       this.randomGigTime = this.convertTo12Hour(randomGig.dates.start.localTime);
-      this.getSpotifyEmbedUrl(this.spotifyToken, this.randomGigArtist);
+
+      if (this.randomGigArtist !== 'Unknown artist') {
+        this.getSpotifyEmbedUrl(this.spotifyToken, this.randomGigArtist);
+      }
     },
 
     async getSpotifyEmbedUrl(token, artistName) {
