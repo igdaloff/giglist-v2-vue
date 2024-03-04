@@ -3,7 +3,7 @@
     <div className="mb-16 text-center">
       <div className="inline-block m-auto">
         <h1 className="text-3xl sm:text-4xl inline mr-3">Find concerts in</h1>
-        <div className="city-select relative inline flex items-center">
+        <div className="city-select relative flex items-center">
           <select
             className="bg-gray-600 hover:bg-gray-700 text-2xl sm:text-3xl py-2 px-3 mt-2 font-light rounded-sm border-gray-600 hover:border-gray-700 cursor-pointer"
             v-model="selected"
@@ -26,7 +26,7 @@
           rel="noopener noreferrer"
           ><strong>{{ randomGigArtist }}</strong> is playing
           <br />
-          <strong v-if="!gigIsToday">{{ randomGigDayOfWeek }} {{ randomGigMonth }} {{ randomGigDay }}</strong>
+          <strong v-if="!gigIsToday">{{ randomGigDayOfWeek }}, {{ randomGigMonth }} {{ randomGigDay }}</strong>
           <strong v-else>Today, {{ randomGigTime }}</strong>
           at {{ randomGigVenue }}&nbsp;→
         </a>
@@ -115,7 +115,7 @@ export default {
       } else {
         // If data not cached, fetch it from the URL generated in getSongkickURL(), extract it as a JSON object, and store it in a new cache, alongside a createdAt timestamp
         // Also, store response in songkickData array defined above in data()
-        // Note: I'm using await/async instead of .then() chains, I think because it's cleaner and easier to read but not entirely sure...
+        // Note: I'm using await/async instead of .then() chains, I think because it's cleaner and easier to read
         const response = await fetch(ticketmasterUrl);
         ticketmasterData = await response.json();
 
@@ -130,30 +130,27 @@ export default {
       this.getRandomGigData();
     },
     getTicketmasterUrl(ticketmasterCityId) {
-      const now = new Date();
-      const today = now.toISOString().substring(0, 19) + 'Z';
+      const startDate = new Date().toISOString().split('T')[0];
+      const endDate = new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().split('T')[0];
       const ticketmasterAPIKey = process.env.VUE_APP_TICKETMASTER_API_KEY;
-      let ticketmasterUrl = `https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&dmaId=${ticketmasterCityId}&apikey=${ticketmasterAPIKey}&startDateTime=${today}`;
+      let ticketmasterUrl = `https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&dmaId=${ticketmasterCityId}&apikey=${ticketmasterAPIKey}&startDateTime=${startDate}T00:00:00Z&endDateTime=${endDate}T23:59:59Z`;
       return ticketmasterUrl;
     },
     getRandomGigData() {
-      console.log(this.ticketmasterData._embedded.events[1]);
       const listOfGigs = this.ticketmasterData._embedded.events;
       const randomGig = listOfGigs[Math.floor(Math.random() * listOfGigs.length)];
       const now = new Date();
       const today = now.toISOString().slice(0, 10);
-      this.gigIsToday = new Date(randomGig.dates.start.localDate).toISOString().slice(0, 10) == today;
-
       const randomGigDate = new Date(randomGig.dates.start.localDate.replace(/-/g, '\/')); //Replacing dash with slash to fix quirky thing with Date() object being 1 day off: https://stackoverflow.com/questions/7556591/is-the-javascript-date-object-always-one-day-off
 
+      this.gigIsToday = new Date(randomGig.dates.start.localDate).toISOString().slice(0, 10) == today;
       this.randomGigVenue = randomGig._embedded.venues[0].name;
       this.randomGigUrl = randomGig.url;
       this.randomGigDayOfWeek = randomGigDate.toLocaleString('default', { weekday: 'long' });
       this.randomGigMonth = randomGigDate.toLocaleString('default', { month: 'long' });
       this.randomGigDay = randomGigDate.getDate();
-      this.randomGigArtist = randomGig.name;
-      this.randomGigTime = randomGig.dates.start.localDate;
-
+      this.randomGigArtist = randomGig._embedded.attractions[0].name;
+      this.randomGigTime = this.convertTo12Hour(randomGig.dates.start.localTime);
       this.getSpotifyEmbedUrl(this.spotifyToken, this.randomGigArtist);
     },
 
@@ -170,6 +167,10 @@ export default {
       const spotifyData = await artistResult.json();
       const spotifyArtistId = spotifyData.artists.items[0].id;
       this.spotifyEmbedUrl = `https://open.spotify.com/embed/artist/${spotifyArtistId}`;
+    },
+    convertTo12Hour(time) {
+      const [hours] = time.split(':');
+      return `${hours % 12 || 12} ${hours >= 12 ? 'PM' : 'AM'}`;
     }
   }
 };
