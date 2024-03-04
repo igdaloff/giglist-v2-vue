@@ -4,11 +4,6 @@ const ticketmasterCityData = {
     value: 'austin',
     id: 222
   },
-  barcelona: {
-    label: 'Barcelona',
-    value: 'barcelona',
-    id: 902
-  },
   boston: {
     label: 'Boston',
     value: 'boston',
@@ -73,11 +68,6 @@ const ticketmasterCityData = {
     label: 'Los Angeles',
     value: 'los-angeles',
     id: 324
-  },
-  madrid: {
-    label: 'Madrid',
-    value: 'madrid',
-    id: 903
   },
   nashville: {
     label: 'Nashville',
